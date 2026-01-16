@@ -61,8 +61,8 @@
     
     // Connect to WebSocket server
     function connect() {
-      // Change this to your server IP if testing from different device
-      ws = new WebSocket('ws://localhost:8080');
+      // Exact URL for your Railway deployment
+      ws = new WebSocket('wss://holybackend-production.up.railway.app');
       
       ws.onopen = () => {
         console.log('Connected to server');

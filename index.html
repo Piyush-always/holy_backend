@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IoT Control Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+    }
+    .connected {
+      color: green;
+      font-weight: bold;
+    }
+    .disconnected {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>IoT Control Panel</h1>
+  
+  <div id="connection-status" class="disconnected">Disconnected</div>
+  
+  <div>
+    <h3>Control PCB #1</h3>
+    <button onclick="sendCommand('pcb1', 'LED_ON')">LED ON</button>
+    <button onclick="sendCommand('pcb1', 'LED_OFF')">LED OFF</button>
+    <button onclick="sendCommand('pcb1', 'MOTOR_START')">Start Motor</button>
+    <button onclick="sendCommand('pcb1', 'MOTOR_STOP')">Stop Motor</button>
+  </div>
+  
+  <div id="status">
+    <h3>Status Updates:</h3>
+    <div id="status-log"></div>
+  </div>
+
+  <script>
+    let ws;
+    
+    // Connect to WebSocket server
+    function connect() {
+      // Change this to your server IP if testing from different device
+      ws = new WebSocket('ws://localhost:8080');
+      
+      ws.onopen = () => {
+        console.log('Connected to server');
+        document.getElementById('connection-status').textContent = 'Connected';
+        document.getElementById('connection-status').className = 'connected';
+        
+        // Register as webpage
+        ws.send(JSON.stringify({
+          type: 'register',
+          clientType: 'webpage'
+        }));
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Received:', data);
+        
+        if (data.type === 'status') {
+          addStatusLog(`Device ${data.deviceId}: ${JSON.stringify(data.data)}`);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('Disconnected from server');
+        document.getElementById('connection-status').textContent = 'Disconnected';
+        document.getElementById('connection-status').className = 'disconnected';
+        
+        // Reconnect after 3 seconds
+        setTimeout(connect, 3000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+    
+    // Send command to PCB
+    function sendCommand(targetPCB, action) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'command',
+          targetPCB: targetPCB,
+          action: action,
+          value: null,
+          timestamp: Date.now()
+        }));
+        
+        addStatusLog(`Sent ${action} to ${targetPCB}`);
+      } else {
+        alert('Not connected to server!');
+      }
+    }
+    
+    // Add log entry
+    function addStatusLog(message) {
+      const log = document.getElementById('status-log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML = `<div>[${time}] ${message}</div>` + log.innerHTML;
+    }
+    
+    // Connect when page loads
+    connect();
+  </script>
+</body>
+</html>

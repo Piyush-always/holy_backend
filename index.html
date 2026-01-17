@@ -1,74 +1,498 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holi Control Panel</title>
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --accent-primary: #3b82f6;
+      --text-main: #1e293b;
+      --text-dim: #64748b;
+      --btn-bg: #ffffff;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      padding: 32px 24px;
+      background: var(--card-bg);
+      border-radius: 32px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    #connection-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 40px;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .connected .status-dot {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* D-Pad */
+    .direction-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 0 auto 40px;
+      width: fit-content;
+    }
+
+    button {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      background: var(--btn-bg);
+      color: var(--text-main);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    /* Visual state for both click and keyboard press */
+    button:active, button.is-pressed {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+      transform: scale(0.92);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .center-space {
+      width: 80px;
+      height: 80px;
+    }
+
+    .up { grid-column: 2; }
+    .left { grid-column: 1; grid-row: 2; }
+    .center-space { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 3; }
+
+    /* Logs */
+    #status {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-header {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    #status-log {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.75rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .log-entry {
+      padding: 2px 0;
+      color: var(--text-dim);
+    }
+
+    .log-entry span {
+      color: var(--accent-primary);
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    #status-log::-webkit-scrollbar { width: 4px; }
+    #status-log::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Holi Control</h1>
+    
+    <div id="connection-status" class="disconnected">
+      <div class="status-dot"></div>
+      <span id="status-text">Connecting...</span>
+    </div>
+
+    <div class="direction-controls">
+      <button class="up" id="btn-UP"
+              onmousedown="startCommand('pcb1', 'UP')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'UP')" 
+              ontouchend="stopCommand()">↑</button>
+      
+      <button class="left" id="btn-LEFT"
+              onmousedown="startCommand('pcb1', 'LEFT')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'LEFT')" 
+              ontouchend="stopCommand()">←</button>
+      
+      <div class="center-space"></div>
+      
+      <button class="right" id="btn-RIGHT"
+              onmousedown="startCommand('pcb1', 'RIGHT')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'RIGHT')" 
+              ontouchend="stopCommand()">→</button>
+      
+      <button class="down" id="btn-DOWN"
+              onmousedown="startCommand('pcb1', 'DOWN')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'DOWN')" 
+              ontouchend="stopCommand()">↓</button>
+    </div>
+
+    <div id="status">
+      <div class="log-header">Activity Log</div>
+      <div id="status-log"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws;
+    let commandInterval = null;
+    let currentCommand = null;
+    let commandQueue = [];
+    let isSending = false;
+
+    function connect() {
+      ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
+      
+      ws.onopen = () => {
+        const indicator = document.getElementById('connection-status');
+        indicator.className = 'connected';
+        document.getElementById('status-text').textContent = 'Live Connection';
+        ws.send(JSON.stringify({ type: 'register', clientType: 'webpage' }));
+        addStatusLog('System Ready');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'status') {
+          addStatusLog(`Response: ${data.deviceId}`);
+        }
+      };
+
+      ws.onclose = () => {
+        const indicator = document.getElementById('connection-status');
+        indicator.className = 'disconnected';
+        document.getElementById('status-text').textContent = 'Offline';
+        addStatusLog('Link Lost - Retrying...');
+        setTimeout(connect, 3000);
+      };
+    }
+
+    function startCommand(targetPCB, action) {
+      if (currentCommand === action) return;
+      stopCommand();
+      currentCommand = action;
+      
+      // Update UI visual state
+      const btn = document.getElementById(`btn-${action}`);
+      if(btn) btn.classList.add('is-pressed');
+
+      sendCommand(targetPCB, action);
+      commandInterval = setInterval(() => sendCommand(targetPCB, action), 100);
+      addStatusLog(`Action: ${action}`);
+    }
+
+    function stopCommand() {
+      if (currentCommand) {
+        const btn = document.getElementById(`btn-${currentCommand}`);
+        if(btn) btn.classList.remove('is-pressed');
+        currentCommand = null;
+      }
+      if (commandInterval) { 
+        clearInterval(commandInterval); 
+        commandInterval = null; 
+      }
+    }
+
+    function sendCommand(targetPCB, action) {
+      const command = { type: 'command', targetPCB, action, value: null, timestamp: Date.now() };
+      commandQueue.push(command);
+      processQueue();
+    }
+
+    function processQueue() {
+      if (isSending || commandQueue.length === 0) return;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        isSending = true;
+        const command = commandQueue.shift();
+        try { ws.send(JSON.stringify(command)); } catch (e) {}
+        setTimeout(() => { isSending = false; processQueue(); }, 10);
+      } else {
+        commandQueue = [];
+        isSending = false;
+      }
+    }
+
+    function addStatusLog(message) {
+      const log = document.getElementById('status-log');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span>${time}</span> ${message}`;
+      log.insertBefore(entry, log.firstChild);
+      while (log.children.length > 20) log.removeChild(log.lastChild);
+    }
+
+    // Keyboard Logic
+    const keyMap = { 
+      'ArrowUp': 'UP', 'w': 'UP', 'W': 'UP',
+      'ArrowDown': 'DOWN', 's': 'DOWN', 'S': 'DOWN',
+      'ArrowLeft': 'LEFT', 'a': 'LEFT', 'A': 'LEFT',
+      'ArrowRight': 'RIGHT', 'd': 'RIGHT', 'D': 'RIGHT'
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      const action = keyMap[e.key];
+      if (action) {
+        e.preventDefault();
+        startCommand('pcb1', action);
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      const action = keyMap[e.key];
+      if (action && currentCommand === action) {
+        stopCommand();
+      }
+    });
+
+    connect();
+  </script>
+</body>
+</html>
+
+<!--claide v3-->
+<!-- <!DOCTYPE html>
 <html>
 <head>
-  <title>IoT Control Panel</title>
+  <title>Holi Control Panel</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       max-width: 600px;
       margin: 50px auto;
       padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
     }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
     button {
-      padding: 15px 30px;
-      font-size: 16px;
-      margin: 10px;
+      padding: 20px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 5px;
       cursor: pointer;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      user-select: none;
     }
+    
     button:hover {
       background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
     }
+    
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .direction-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 300px;
+      margin: 20px auto;
+    }
+    
+    .direction-controls button {
+      height: 80px;
+      font-size: 24px;
+    }
+    
+    .up { grid-column: 2; }
+    .left { grid-column: 1; grid-row: 2; }
+    .center { grid-column: 2; grid-row: 2; background: #666; cursor: default; }
+    .right { grid-column: 3; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 3; }
+    
     #status {
       margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    #connection-status {
+      text-align: center;
       padding: 10px;
-      background: #f0f0f0;
-      border-radius: 5px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 18px;
     }
+    
     .connected {
-      color: green;
+      background: rgba(76, 175, 80, 0.3);
+      color: #4CAF50;
       font-weight: bold;
     }
+    
     .disconnected {
-      color: red;
+      background: rgba(244, 67, 54, 0.3);
+      color: #f44336;
       font-weight: bold;
+    }
+    
+    #status-log div {
+      padding: 5px;
+      margin: 5px 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <h1>IoT Control Panel</h1>
-  
-  <div id="connection-status" class="disconnected">Disconnected</div>
-  
-  <div>
-    <h3>Control PCB #1</h3>
-    <button onclick="sendCommand('pcb1', 'LED_ON')">LED ON</button>
-    <button onclick="sendCommand('pcb1', 'LED_OFF')">LED OFF</button>
-    <button onclick="sendCommand('pcb1', 'MOTOR_START')">Start Motor</button>
-    <button onclick="sendCommand('pcb1', 'MOTOR_STOP')">Stop Motor</button>
-  </div>
-  
-  <div id="status">
-    <h3>Status Updates:</h3>
-    <div id="status-log"></div>
+  <div class="container">
+    <h1>🎨 Holi Control Panel 🎨</h1>
+    
+    <div id="connection-status" class="disconnected">Disconnected</div>
+    
+    <div>
+      <h3 style="text-align: center;">Direction Controls</h3>
+      <div class="direction-controls">
+        <button class="up" 
+                onmousedown="startCommand('pcb1', 'UP')" 
+                onmouseup="stopCommand()" 
+                onmouseleave="stopCommand()"
+                ontouchstart="startCommand('pcb1', 'UP')" 
+                ontouchend="stopCommand()">
+          ▲
+        </button>
+        
+        <button class="left" 
+                onmousedown="startCommand('pcb1', 'LEFT')" 
+                onmouseup="stopCommand()" 
+                onmouseleave="stopCommand()"
+                ontouchstart="startCommand('pcb1', 'LEFT')" 
+                ontouchend="stopCommand()">
+          ◄
+        </button>
+        
+        <button class="center" disabled>⊙</button>
+        
+        <button class="right" 
+                onmousedown="startCommand('pcb1', 'RIGHT')" 
+                onmouseup="stopCommand()" 
+                onmouseleave="stopCommand()"
+                ontouchstart="startCommand('pcb1', 'RIGHT')" 
+                ontouchend="stopCommand()">
+          ►
+        </button>
+        
+        <button class="down" 
+                onmousedown="startCommand('pcb1', 'DOWN')" 
+                onmouseup="stopCommand()" 
+                onmouseleave="stopCommand()"
+                ontouchstart="startCommand('pcb1', 'DOWN')" 
+                ontouchend="stopCommand()">
+          ▼
+        </button>
+      </div>
+    </div>
+    
+    <div id="status">
+      <h3>Status Updates:</h3>
+      <div id="status-log"></div>
+    </div>
   </div>
 
   <script>
     let ws;
+    let commandInterval = null;
+    let currentCommand = null;
+    let commandQueue = [];
+    let isSending = false;
     
     // Connect to WebSocket server
     function connect() {
-      // Exact URL for your Railway deployment
-      // ws = new WebSocket('wss://holybackend-production.up.railway.app');
-      // ws = new WebSocket('ws://192.168.1.17:8080');
       ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
       
       ws.onopen = () => {
         console.log('Connected to server');
-        document.getElementById('connection-status').textContent = 'Connected';
+        document.getElementById('connection-status').textContent = 'Connected ✓';
         document.getElementById('connection-status').className = 'connected';
         
         // Register as webpage
@@ -76,6 +500,8 @@
           type: 'register',
           clientType: 'webpage'
         }));
+        
+        addStatusLog('Connected to server');
       };
       
       ws.onmessage = (event) => {
@@ -89,8 +515,10 @@
       
       ws.onclose = () => {
         console.log('Disconnected from server');
-        document.getElementById('connection-status').textContent = 'Disconnected';
+        document.getElementById('connection-status').textContent = 'Disconnected ✗';
         document.getElementById('connection-status').className = 'disconnected';
+        
+        addStatusLog('Disconnected from server');
         
         // Reconnect after 3 seconds
         setTimeout(connect, 3000);
@@ -98,23 +526,91 @@
       
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
+        addStatusLog('Connection error');
       };
     }
     
-    // Send command to PCB
+    // Start sending command continuously
+    function startCommand(targetPCB, action) {
+      // Prevent duplicate commands
+      if (currentCommand === action) {
+        return;
+      }
+      
+      // Stop any previous command
+      stopCommand();
+      
+      currentCommand = action;
+      
+      // Send immediately
+      sendCommand(targetPCB, action);
+      
+      // Then send continuously every 100ms
+      commandInterval = setInterval(() => {
+        sendCommand(targetPCB, action);
+      }, 100);
+      
+      addStatusLog(`Started: ${action}`);
+    }
+    
+    // Stop sending command
+    function stopCommand() {
+      if (commandInterval) {
+        clearInterval(commandInterval);
+        commandInterval = null;
+      }
+      
+      if (currentCommand) {
+        addStatusLog(`Stopped: ${currentCommand}`);
+        currentCommand = null;
+      }
+    }
+    
+    // Send single command with queue system
     function sendCommand(targetPCB, action) {
+      const command = {
+        type: 'command',
+        targetPCB: targetPCB,
+        action: action,
+        value: null,
+        timestamp: Date.now()
+      };
+      
+      // Add to queue
+      commandQueue.push(command);
+      
+      // Process queue
+      processQueue();
+    }
+    
+    // Process command queue
+    function processQueue() {
+      if (isSending || commandQueue.length === 0) {
+        return;
+      }
+      
       if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'command',
-          targetPCB: targetPCB,
-          action: action,
-          value: null,
-          timestamp: Date.now()
-        }));
+        isSending = true;
         
-        addStatusLog(`Sent ${action} to ${targetPCB}`);
+        const command = commandQueue.shift();
+        
+        try {
+          ws.send(JSON.stringify(command));
+          console.log('Sent:', command.action);
+        } catch (error) {
+          console.error('Send error:', error);
+        }
+        
+        // Allow next send after 10ms
+        setTimeout(() => {
+          isSending = false;
+          processQueue();
+        }, 10);
+        
       } else {
-        alert('Not connected to server!');
+        // Clear queue if not connected
+        commandQueue = [];
+        isSending = false;
       }
     }
     
@@ -122,11 +618,383 @@
     function addStatusLog(message) {
       const log = document.getElementById('status-log');
       const time = new Date().toLocaleTimeString();
-      log.innerHTML = `<div>[${time}] ${message}</div>` + log.innerHTML;
+      const entry = document.createElement('div');
+      entry.textContent = `[${time}] ${message}`;
+      log.insertBefore(entry, log.firstChild);
+      
+      // Keep only last 50 entries
+      while (log.children.length > 50) {
+        log.removeChild(log.lastChild);
+      }
     }
+    
+    // Keyboard controls (optional bonus feature)
+    document.addEventListener('keydown', (e) => {
+      if (e.repeat) return; // Ignore key repeat
+      
+      switch(e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          e.preventDefault();
+          startCommand('pcb1', 'UP');
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          e.preventDefault();
+          startCommand('pcb1', 'DOWN');
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          e.preventDefault();
+          startCommand('pcb1', 'LEFT');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          e.preventDefault();
+          startCommand('pcb1', 'RIGHT');
+          break;
+      }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      switch(e.key) {
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+        case 'w':
+        case 'W':
+        case 's':
+        case 'S':
+        case 'a':
+        case 'A':
+        case 'd':
+        case 'D':
+          stopCommand();
+          break;
+      }
+    });
     
     // Connect when page loads
     connect();
   </script>
 </body>
-</html>
+</html> -->
+
+
+<!-- gemin version 1 -->
+<!-- <!DOCTYPE html>  
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holi Control Panel</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --accent-primary: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+      color: var(--text-main);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 24px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: -0.025em;
+    }
+
+    /* Connection Status */
+    #connection-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 32px;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .connected .status-dot {
+      background: var(--success);
+      box-shadow: 0 0 12px var(--success);
+    }
+
+    /* D-Pad Layout */
+    .direction-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 0 auto 32px;
+      width: fit-content;
+    }
+
+    button {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    button:active:not(:disabled) {
+      background: var(--accent-primary);
+      transform: scale(0.95);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .center-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: default;
+    }
+
+    .up { grid-column: 2; }
+    .left { grid-column: 1; grid-row: 2; }
+    .center { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 3; }
+
+    /* Log Section */
+    #status {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      padding: 16px;
+      height: 150px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-header {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 4px;
+    }
+
+    #status-log {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.75rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      color: var(--text-dim);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .log-entry span {
+      color: var(--accent-primary);
+      margin-right: 8px;
+    }
+
+    /* Scrollbar */
+    #status-log::-webkit-scrollbar { width: 4px; }
+    #status-log::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Holi Control Panel</h1>
+    
+    <div id="connection-status" class="disconnected">
+      <div class="status-dot"></div>
+      <span id="status-text">Disconnected</span>
+    </div>
+
+    <div class="direction-controls">
+      <button class="up" 
+              onmousedown="startCommand('pcb1', 'UP')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'UP')" 
+              ontouchend="stopCommand()">↑</button>
+      
+      <button class="left" 
+              onmousedown="startCommand('pcb1', 'LEFT')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'LEFT')" 
+              ontouchend="stopCommand()">←</button>
+      
+      <div class="center center-btn">○</div>
+      
+      <button class="right" 
+              onmousedown="startCommand('pcb1', 'RIGHT')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'RIGHT')" 
+              ontouchend="stopCommand()">→</button>
+      
+      <button class="down" 
+              onmousedown="startCommand('pcb1', 'DOWN')" onmouseup="stopCommand()" 
+              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'DOWN')" 
+              ontouchend="stopCommand()">↓</button>
+    </div>
+
+    <div id="status">
+      <div class="log-header">System Logs</div>
+      <div id="status-log"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws;
+    let commandInterval = null;
+    let currentCommand = null;
+    let commandQueue = [];
+    let isSending = false;
+
+    function connect() {
+      ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
+      
+      ws.onopen = () => {
+        const indicator = document.getElementById('connection-status');
+        indicator.className = 'connected';
+        document.getElementById('status-text').textContent = 'System Active';
+        
+        ws.send(JSON.stringify({ type: 'register', clientType: 'webpage' }));
+        addStatusLog('Server Connection Established');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'status') {
+          addStatusLog(`Device ${data.deviceId}: ${JSON.stringify(data.data)}`);
+        }
+      };
+
+      ws.onclose = () => {
+        const indicator = document.getElementById('connection-status');
+        indicator.className = 'disconnected';
+        document.getElementById('status-text').textContent = 'Disconnected';
+        addStatusLog('Server Connection Lost');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = () => addStatusLog('Connection Error');
+    }
+
+    function startCommand(targetPCB, action) {
+      if (currentCommand === action) return;
+      stopCommand();
+      currentCommand = action;
+      sendCommand(targetPCB, action);
+      commandInterval = setInterval(() => sendCommand(targetPCB, action), 100);
+      addStatusLog(`Action: ${action}`);
+    }
+
+    function stopCommand() {
+      if (commandInterval) { clearInterval(commandInterval); commandInterval = null; }
+      if (currentCommand) { currentCommand = null; }
+    }
+
+    function sendCommand(targetPCB, action) {
+      const command = { type: 'command', targetPCB, action, value: null, timestamp: Date.now() };
+      commandQueue.push(command);
+      processQueue();
+    }
+
+    function processQueue() {
+      if (isSending || commandQueue.length === 0) return;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        isSending = true;
+        const command = commandQueue.shift();
+        try {
+          ws.send(JSON.stringify(command));
+        } catch (error) {
+          console.error('Send error:', error);
+        }
+        setTimeout(() => { isSending = false; processQueue(); }, 10);
+      } else {
+        commandQueue = [];
+        isSending = false;
+      }
+    }
+
+    function addStatusLog(message) {
+      const log = document.getElementById('status-log');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span>[${time}]</span>${message}`;
+      log.insertBefore(entry, log.firstChild);
+      while (log.children.length > 50) log.removeChild(log.lastChild);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      const keyMap = { 
+        'ArrowUp': 'UP', 'w': 'UP', 
+        'ArrowDown': 'DOWN', 's': 'DOWN', 
+        'ArrowLeft': 'LEFT', 'a': 'LEFT', 
+        'ArrowRight': 'RIGHT', 'd': 'RIGHT' 
+      };
+      if (keyMap[e.key]) {
+        e.preventDefault();
+        startCommand('pcb1', keyMap[e.key]);
+      }
+    });
+
+    document.addEventListener('keyup', (e) => stopCommand());
+
+    connect();
+  </script>
+</body>
+</html> -->
+
+

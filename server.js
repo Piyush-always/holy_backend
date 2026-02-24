@@ -1,80 +1,119 @@
 const WebSocket = require('ws');
 
-// Create WebSocket server on port 8080
 const wss = new WebSocket.Server({ port: 8080 });
 
 // Store connected clients
 const clients = {
-  webpages: new Set(),
-  pcbs: new Set()
+  webpages:     new Set(),
+  pcbs:         new Map(),   // deviceId -> ws
+  controllers:  new Map(),   // deviceId -> ws
 };
 
 console.log('WebSocket server started on port 8080');
 
-// Handle new connections
 wss.on('connection', (ws) => {
   console.log('New client connected');
-  
-  // Handle messages from clients
+
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message);
       console.log('Received:', data);
-      
-      // Register client type
+
+      // ── REGISTER ────────────────────────────────────────────────
       if (data.type === 'register') {
+
         if (data.clientType === 'webpage') {
           clients.webpages.add(ws);
           ws.clientType = 'webpage';
           console.log('Webpage registered');
+
+          // Tell webpage about all currently connected devices
+          clients.pcbs.forEach((_, id) =>
+            ws.send(JSON.stringify({ type: 'device_connected', deviceId: id }))
+          );
+          clients.controllers.forEach((_, id) =>
+            ws.send(JSON.stringify({ type: 'device_connected', deviceId: id }))
+          );
+
         } else if (data.clientType === 'pcb') {
-          clients.pcbs.add(ws);
           ws.clientType = 'pcb';
-          ws.deviceId = data.deviceId;
+          ws.deviceId   = data.deviceId;
+          clients.pcbs.set(data.deviceId, ws);
           console.log(`PCB registered: ${data.deviceId}`);
+          notifyWebpages({ type: 'device_connected', deviceId: data.deviceId });
+
+        } else if (data.clientType === 'controller') {
+          ws.clientType = 'controller';
+          ws.deviceId   = data.deviceId;
+          clients.controllers.set(data.deviceId, ws);
+          console.log(`Controller registered: ${data.deviceId}`);
+          notifyWebpages({ type: 'device_connected', deviceId: data.deviceId });
         }
       }
-      
-      // Handle commands from webpage to PCB
+
+      // ── COMMAND ─────────────────────────────────────────────────
+      // Accepts both short format {d, s, t} and old format {action, targetPCB}
       if (data.type === 'command') {
-        console.log(`Routing command to PCB ${data.targetPCB}`);
-        clients.pcbs.forEach(pcb => {
-          if (pcb.deviceId === data.targetPCB) {
-            pcb.send(JSON.stringify({
-              type: 'command',
-              action: data.action,
-              value: data.value
-            }));
-          }
-        });
-      }
-      
-      // Handle status updates from PCB to webpages
-      if (data.type === 'status') {
-        console.log('Broadcasting status to webpages');
-        clients.webpages.forEach(webpage => {
-          webpage.send(JSON.stringify({
-            type: 'status',
-            deviceId: ws.deviceId,
-            data: data.data
+        const target = data.t || data.targetPCB;  // support both formats
+        console.log(`Command from [${ws.clientType}] → target: ${target} | d:${data.d} s:${data.s}`);
+
+        // Forward to target PCB
+        const targetPcb = clients.pcbs.get(target);
+        if (targetPcb && targetPcb.readyState === WebSocket.OPEN) {
+          targetPcb.send(JSON.stringify({
+            type: 'command',
+            d:    data.d,
+            s:    data.s,
+            from: ws.deviceId || ws.clientType,
           }));
+          console.log(`  ✓ Delivered to PCB [${target}]`);
+        } else {
+          console.log(`  ✗ PCB [${target}] not connected`);
+        }
+
+        // Also mirror to all webpages so they see the live log
+        notifyWebpages({
+          type: 'command',
+          d:    data.d,
+          s:    data.s,
+          t:    target,
+          from: ws.deviceId || ws.clientType,
         });
       }
-      
+
+      // ── STATUS from PCB ─────────────────────────────────────────
+      if (data.type === 'status') {
+        console.log(`Status from PCB [${ws.deviceId}]`);
+        notifyWebpages({
+          type:     'status',
+          deviceId: ws.deviceId,
+          message:  data.message || '',
+        });
+      }
+
     } catch (error) {
       console.error('Error processing message:', error);
     }
   });
-  
-  // Handle disconnection
+
   ws.on('close', () => {
-    console.log('Client disconnected');
+    const id = ws.deviceId;
+    console.log(`Disconnected: [${ws.clientType}] ${id || ''}`);
+
     clients.webpages.delete(ws);
-    clients.pcbs.delete(ws);
+    if (ws.clientType === 'pcb')        clients.pcbs.delete(id);
+    if (ws.clientType === 'controller') clients.controllers.delete(id);
+
+    if (id) notifyWebpages({ type: 'device_disconnected', deviceId: id });
   });
-  
-  // Handle errors
-  ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
-  });
+
+  ws.on('error', (err) => console.error('WS error:', err));
 });
+
+// ── Helper ────────────────────────────────────────────────────────
+function notifyWebpages(payload) {
+  const msg = JSON.stringify(payload);
+  clients.webpages.forEach(wp => {
+    if (wp.readyState === WebSocket.OPEN) wp.send(msg);
+  });
+}

@@ -24,28 +24,33 @@
       margin: 0;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
+      padding: 32px 16px;
       -webkit-tap-highlight-color: transparent;
     }
 
     .container {
       width: 100%;
-      max-width: 380px;
+      max-width: 420px;
       padding: 32px 24px;
       background: var(--card-bg);
       border-radius: 32px;
       box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
     }
 
     h1 {
       font-size: 1.25rem;
       font-weight: 600;
       text-align: center;
-      margin-bottom: 8px;
+      margin: 0;
       color: var(--text-main);
     }
 
+    /* ── Connection status ── */
     #connection-status {
       display: flex;
       align-items: center;
@@ -53,34 +58,88 @@
       gap: 8px;
       font-size: 0.8rem;
       font-weight: 500;
-      margin-bottom: 40px;
       color: var(--text-dim);
     }
 
     .status-dot {
-      width: 6px;
-      height: 6px;
+      width: 6px; height: 6px;
       border-radius: 50%;
       background: var(--danger);
     }
-
     .connected .status-dot {
       background: var(--success);
       box-shadow: 0 0 8px var(--success);
     }
 
-    /* D-Pad */
+    /* ── Device pills ── */
+    .devices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .devices-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+
+    .device-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      transition: border-color 0.3s;
+    }
+
+    .device-row.online { border-color: var(--success); }
+
+    .device-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+
+    .device-row.online .device-dot {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .device-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .device-note {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── D-Pad ── */
     .direction-controls {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 80px);
+      grid-template-rows: repeat(3, 80px);
       gap: 16px;
-      margin: 0 auto 40px;
+      margin: 0 auto;
       width: fit-content;
     }
 
     button {
-      width: 80px;
-      height: 80px;
+      width: 80px; height: 80px;
       border-radius: 20px;
       border: 1px solid #e2e8f0;
       background: var(--btn-bg);
@@ -89,12 +148,21 @@
       cursor: pointer;
       transition: all 0.1s ease;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+      gap: 3px;
       box-shadow: var(--shadow);
     }
 
-    /* Visual state for both click and keyboard press */
+    button .btn-label {
+      font-size: 0.55rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+    }
+
     button:active, button.is-pressed {
       background: var(--accent-primary);
       color: white;
@@ -103,213 +171,334 @@
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
     }
 
-    .center-space {
-      width: 80px;
-      height: 80px;
+    button:active .btn-label, button.is-pressed .btn-label {
+      color: rgba(255,255,255,0.8);
     }
 
-    .up { grid-column: 2; }
-    .left { grid-column: 1; grid-row: 2; }
-    .center-space { grid-column: 2; grid-row: 2; }
-    .right { grid-column: 3; grid-row: 2; }
-    .down { grid-column: 2; grid-row: 3; }
+    /* grid positions — 4 cols x 3 rows
+       Col: 1=left  2=up1/dn1  3=up2/dn2  4=right  */
+    .btn-left  { grid-column: 1; grid-row: 2; }
+    .btn-up1   { grid-column: 2; grid-row: 1; }
+    .btn-up2   { grid-column: 3; grid-row: 1; }
+    .btn-right { grid-column: 4; grid-row: 2; }
+    .btn-down1 { grid-column: 2; grid-row: 3; }
+    .btn-down2 { grid-column: 3; grid-row: 3; }
 
-    /* Logs */
-    #status {
+    /* ── Logs ── */
+    .log-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .log-tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .log-tab {
+      flex: 1;
+      padding: 6px 4px;
+      font-family: inherit;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: transparent;
+      border: none;
+      border-radius: 9px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+      width: auto;
+      height: auto;
+      box-shadow: none;
+    }
+
+    .log-tab:active, .log-tab.is-pressed { /* prevent dpad styles applying */
+      transform: none;
+      box-shadow: none;
+    }
+
+    .log-tab.active {
+      background: white;
+      color: var(--text-main);
+      box-shadow: var(--shadow);
+    }
+
+    .log-panel { display: none; }
+    .log-panel.active { display: block; }
+
+    .log-area {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 16px;
-      padding: 16px;
-      height: 120px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .log-header {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-dim);
-      margin-bottom: 8px;
-    }
-
-    #status-log {
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 0.75rem;
+      padding: 14px 16px;
+      height: 130px;
       overflow-y: auto;
-      flex-grow: 1;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.72rem;
     }
+
+    .log-area::-webkit-scrollbar { width: 4px; }
+    .log-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     .log-entry {
       padding: 2px 0;
-      color: var(--text-dim);
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
     }
 
-    .log-entry span {
-      color: var(--accent-primary);
-      font-weight: 600;
-      margin-right: 6px;
+    .log-time { color: var(--text-dim); flex-shrink: 0; }
+    .log-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 5px;
+      flex-shrink: 0;
     }
+    .badge-tx  { background: #fef3c7; color: #b45309; }
+    .badge-rx  { background: #dcfce7; color: #15803d; }
+    .badge-sys { background: #f1f5f9; color: var(--text-dim); }
 
-    #status-log::-webkit-scrollbar { width: 4px; }
-    #status-log::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .log-msg-tx  { color: #92400e; }
+    .log-msg-rx  { color: #166534; }
+    .log-msg-sys { color: var(--text-dim); }
   </style>
 </head>
 <body>
+<div class="container">
 
-  <div class="container">
-    <h1>Holi Control</h1>
-    
-    <div id="connection-status" class="disconnected">
-      <div class="status-dot"></div>
-      <span id="status-text">Connecting...</span>
+  <h1>Holi Control</h1>
+
+  <div id="connection-status" class="disconnected">
+    <div class="status-dot"></div>
+    <span id="status-text">Connecting...</span>
+  </div>
+
+  <!-- Device Status -->
+  <div class="devices">
+    <div class="devices-label">Devices</div>
+    <div class="device-row" id="dev-controller1">
+      <div class="device-dot"></div>
+      <div class="device-name">Controller</div>
+      <div class="device-note" id="note-controller1">Offline</div>
     </div>
-
-    <div class="direction-controls">
-      <button class="up" id="btn-UP"
-              onmousedown="startCommand('pcb1', 'UP')" onmouseup="stopCommand()" 
-              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'UP')" 
-              ontouchend="stopCommand()">↑</button>
-      
-      <button class="left" id="btn-LEFT"
-              onmousedown="startCommand('pcb1', 'LEFT')" onmouseup="stopCommand()" 
-              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'LEFT')" 
-              ontouchend="stopCommand()">←</button>
-      
-      <div class="center-space"></div>
-      
-      <button class="right" id="btn-RIGHT"
-              onmousedown="startCommand('pcb1', 'RIGHT')" onmouseup="stopCommand()" 
-              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'RIGHT')" 
-              ontouchend="stopCommand()">→</button>
-      
-      <button class="down" id="btn-DOWN"
-              onmousedown="startCommand('pcb1', 'DOWN')" onmouseup="stopCommand()" 
-              onmouseleave="stopCommand()" ontouchstart="startCommand('pcb1', 'DOWN')" 
-              ontouchend="stopCommand()">↓</button>
-    </div>
-
-    <div id="status">
-      <div class="log-header">Activity Log</div>
-      <div id="status-log"></div>
+    <div class="device-row" id="dev-pcb1">
+      <div class="device-dot"></div>
+      <div class="device-name">PCB / Motors</div>
+      <div class="device-note" id="note-pcb1">Offline</div>
     </div>
   </div>
 
-  <script>
-    let ws;
-    let commandInterval = null;
-    let currentCommand = null;
-    let commandQueue = [];
-    let isSending = false;
+  <!-- Layout:
+         [UP1] [UP2]
+   [L]              [R]
+         [DN1] [DN2]
+  -->
+  <div class="direction-controls">
+    <button class="btn-left" id="btn-0"
+      onmousedown="press(0)" onmouseup="release(0)" onmouseleave="release(0)"
+      ontouchstart="press(0)" ontouchend="release(0)">
+      ← <span class="btn-label">Base L</span>
+    </button>
 
-    function connect() {
-      ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
-      
-      ws.onopen = () => {
-        const indicator = document.getElementById('connection-status');
-        indicator.className = 'connected';
-        document.getElementById('status-text').textContent = 'Live Connection';
-        ws.send(JSON.stringify({ type: 'register', clientType: 'webpage' }));
-        addStatusLog('System Ready');
-      };
+    <button class="btn-up1" id="btn-2"
+      onmousedown="press(2)" onmouseup="release(2)" onmouseleave="release(2)"
+      ontouchstart="press(2)" ontouchend="release(2)">
+      ↑ <span class="btn-label">LP Up</span>
+    </button>
 
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'status') {
-          addStatusLog(`Response: ${data.deviceId}`);
-        }
-      };
+    <button class="btn-up2" id="btn-4"
+      onmousedown="press(4)" onmouseup="release(4)" onmouseleave="release(4)"
+      ontouchstart="press(4)" ontouchend="release(4)">
+      ↑ <span class="btn-label">RP Up</span>
+    </button>
 
-      ws.onclose = () => {
-        const indicator = document.getElementById('connection-status');
-        indicator.className = 'disconnected';
-        document.getElementById('status-text').textContent = 'Offline';
-        addStatusLog('Link Lost - Retrying...');
-        setTimeout(connect, 3000);
-      };
+    <button class="btn-right" id="btn-1"
+      onmousedown="press(1)" onmouseup="release(1)" onmouseleave="release(1)"
+      ontouchstart="press(1)" ontouchend="release(1)">
+      → <span class="btn-label">Base R</span>
+    </button>
+
+    <button class="btn-down1" id="btn-3"
+      onmousedown="press(3)" onmouseup="release(3)" onmouseleave="release(3)"
+      ontouchstart="press(3)" ontouchend="release(3)">
+      ↓ <span class="btn-label">LP Dn</span>
+    </button>
+
+    <button class="btn-down2" id="btn-5"
+      onmousedown="press(5)" onmouseup="release(5)" onmouseleave="release(5)"
+      ontouchstart="press(5)" ontouchend="release(5)">
+      ↓ <span class="btn-label">RP Dn</span>
+    </button>
+  </div>
+
+  <!-- Logs -->
+  <div class="log-wrap">
+    <div class="log-tabs">
+      <button class="log-tab active" onclick="switchTab('all')">All</button>
+      <button class="log-tab" onclick="switchTab('tx')">TX</button>
+      <button class="log-tab" onclick="switchTab('rx')">RX</button>
+      <button class="log-tab" onclick="switchTab('sys')">System</button>
+    </div>
+    <div class="log-panel active" id="panel-all"><div class="log-area" id="log-all"></div></div>
+    <div class="log-panel" id="panel-tx"><div class="log-area" id="log-tx"></div></div>
+    <div class="log-panel" id="panel-rx"><div class="log-area" id="log-rx"></div></div>
+    <div class="log-panel" id="panel-sys"><div class="log-area" id="log-sys"></div></div>
+  </div>
+
+</div>
+
+<script>
+  const DIR = { 0:'Base ←', 1:'Base →', 2:'LP ↑', 3:'LP ↓', 4:'RP ↑', 5:'RP ↓' };
+
+  let ws;
+  const pressedState = {};
+
+  // ── Tabs ──────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.log-tab').forEach(t =>
+      t.classList.toggle('active', t.textContent.toLowerCase().startsWith(tab === 'all' ? 'all' : tab))
+    );
+    document.querySelectorAll('.log-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tab}`).classList.add('active');
+  }
+
+  // ── Logging ───────────────────────────────────────────────────
+  function addLog(type, message) {
+    const time = new Date().toLocaleTimeString([], { hour12: false });
+    const labels = { tx: 'TX', rx: 'RX', sys: 'SYS' };
+
+    function row() {
+      const d = document.createElement('div');
+      d.className = 'log-entry';
+      d.innerHTML = `<span class="log-time">${time}</span>
+                     <span class="log-badge badge-${type}">${labels[type]}</span>
+                     <span class="log-msg-${type}">${message}</span>`;
+      return d;
     }
 
-    function startCommand(targetPCB, action) {
-      if (currentCommand === action) return;
-      stopCommand();
-      currentCommand = action;
-      
-      // Update UI visual state
-      const btn = document.getElementById(`btn-${action}`);
-      if(btn) btn.classList.add('is-pressed');
+    const all = document.getElementById('log-all');
+    all.prepend(row());
+    if (all.children.length > 40) all.removeChild(all.lastChild);
 
-      sendCommand(targetPCB, action);
-      commandInterval = setInterval(() => sendCommand(targetPCB, action), 100);
-      addStatusLog(`Action: ${action}`);
-    }
+    const specific = document.getElementById(`log-${type}`);
+    specific.prepend(row());
+    if (specific.children.length > 40) specific.removeChild(specific.lastChild);
+  }
 
-    function stopCommand() {
-      if (currentCommand) {
-        const btn = document.getElementById(`btn-${currentCommand}`);
-        if(btn) btn.classList.remove('is-pressed');
-        currentCommand = null;
-      }
-      if (commandInterval) { 
-        clearInterval(commandInterval); 
-        commandInterval = null; 
-      }
-    }
+  // ── Device status ─────────────────────────────────────────────
+  function setDevice(id, online, note) {
+    const row  = document.getElementById(`dev-${id}`);
+    const noteEl = document.getElementById(`note-${id}`);
+    if (!row) return;
+    row.classList.toggle('online', online);
+    if (noteEl) noteEl.textContent = online ? (note || 'Online') : 'Offline';
+  }
 
-    function sendCommand(targetPCB, action) {
-      const command = { type: 'command', targetPCB, action, value: null, timestamp: Date.now() };
-      commandQueue.push(command);
-      processQueue();
-    }
+  // ── WebSocket ─────────────────────────────────────────────────
+  function connect() {
+    ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
 
-    function processQueue() {
-      if (isSending || commandQueue.length === 0) return;
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        isSending = true;
-        const command = commandQueue.shift();
-        try { ws.send(JSON.stringify(command)); } catch (e) {}
-        setTimeout(() => { isSending = false; processQueue(); }, 10);
-      } else {
-        commandQueue = [];
-        isSending = false;
-      }
-    }
-
-    function addStatusLog(message) {
-      const log = document.getElementById('status-log');
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.innerHTML = `<span>${time}</span> ${message}`;
-      log.insertBefore(entry, log.firstChild);
-      while (log.children.length > 20) log.removeChild(log.lastChild);
-    }
-
-    // Keyboard Logic
-    const keyMap = { 
-      'ArrowUp': 'UP', 'w': 'UP', 'W': 'UP',
-      'ArrowDown': 'DOWN', 's': 'DOWN', 'S': 'DOWN',
-      'ArrowLeft': 'LEFT', 'a': 'LEFT', 'A': 'LEFT',
-      'ArrowRight': 'RIGHT', 'd': 'RIGHT', 'D': 'RIGHT'
+    ws.onopen = () => {
+      document.getElementById('connection-status').className = 'connected';
+      document.getElementById('status-text').textContent = 'Live Connection';
+      ws.send(JSON.stringify({ type: 'register', clientType: 'webpage', deviceId: 'webpage' }));
+      addLog('sys', 'WebSocket connected');
     };
 
-    document.addEventListener('keydown', (e) => {
-      if (e.repeat) return;
-      const action = keyMap[e.key];
-      if (action) {
-        e.preventDefault();
-        startCommand('pcb1', action);
-      }
-    });
+    ws.onmessage = (e) => {
+      let data;
+      try { data = JSON.parse(e.data); } catch { return; }
 
-    document.addEventListener('keyup', (e) => {
-      const action = keyMap[e.key];
-      if (action && currentCommand === action) {
-        stopCommand();
+      if (data.type === 'device_connected') {
+        setDevice(data.deviceId, true);
+        addLog('sys', `${data.deviceId} connected`);
       }
-    });
+      if (data.type === 'device_disconnected') {
+        setDevice(data.deviceId, false);
+        addLog('sys', `${data.deviceId} disconnected`);
+      }
+      if (data.type === 'command' && 'd' in data) {
+        const dir = DIR[data.d] || `d=${data.d}`;
+        const act = data.s === 1 ? '▶' : '■';
+        const from = data.from || data.deviceId || '';
+        const to   = data.t || data.target || '';
+        if (from === 'controller1') {
+          addLog('tx', `${act} ${dir} → ${to}`);
+          setDevice('controller1', true, `${act} ${dir}`);
+        } else if (from === 'pcb1') {
+          addLog('rx', `ACK ${act} ${dir}`);
+          setDevice('pcb1', true, `Last: ${dir}`);
+        } else {
+          addLog('tx', `WEB ${act} ${dir}`);
+        }
+      }
+      if (data.type === 'status') {
+        setDevice(data.deviceId, true, data.message || 'Active');
+        addLog('sys', `Status · ${data.deviceId}`);
+      }
+    };
 
-    connect();
-  </script>
+    ws.onclose = () => {
+      document.getElementById('connection-status').className = 'disconnected';
+      document.getElementById('status-text').textContent = 'Offline';
+      setDevice('controller1', false);
+      setDevice('pcb1', false);
+      addLog('sys', 'Lost connection — retrying...');
+      setTimeout(connect, 3000);
+    };
+  }
+
+  // ── Send ──────────────────────────────────────────────────────
+  function sendCmd(d, s) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'command', t: 'pcb1', d, s }));
+      addLog('tx', `${s ? '▶' : '■'} ${DIR[d]}`);
+    }
+  }
+
+  function press(d) {
+    if (pressedState[d]) return;
+    pressedState[d] = true;
+    document.getElementById(`btn-${d}`)?.classList.add('is-pressed');
+    sendCmd(d, 1);
+  }
+
+  function release(d) {
+    if (!pressedState[d]) return;
+    pressedState[d] = false;
+    document.getElementById(`btn-${d}`)?.classList.remove('is-pressed');
+    sendCmd(d, 0);
+  }
+
+  // ── Keyboard ──────────────────────────────────────────────────
+  const keyMap = {
+    'ArrowLeft':'0','a':'0','A':'0',   // Base left
+    'ArrowRight':'1','d':'1','D':'1',  // Base right
+    'w':'2','W':'2',                   // LP up
+    's':'3','S':'3',                   // LP down
+    'ArrowUp':'4',                     // RP up
+    'ArrowDown':'5',                   // RP down
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.repeat) return;
+    const d = keyMap[e.key];
+    if (d !== undefined) { e.preventDefault(); press(Number(d)); }
+  });
+  document.addEventListener('keyup', e => {
+    const d = keyMap[e.key];
+    if (d !== undefined) release(Number(d));
+  });
+
+  connect();
+</script>
 </body>
 </html>
-

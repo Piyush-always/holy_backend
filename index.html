@@ -24,7 +24,6 @@
       margin: 0;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
       min-height: 100vh;
       padding: 32px 16px;
       -webkit-tap-highlight-color: transparent;
@@ -40,6 +39,7 @@
       display: flex;
       flex-direction: column;
       gap: 28px;
+      height: fit-content;
     }
 
     h1 {
@@ -47,7 +47,6 @@
       font-weight: 600;
       text-align: center;
       margin: 0;
-      color: var(--text-main);
     }
 
     /* ── Connection status ── */
@@ -66,25 +65,26 @@
       border-radius: 50%;
       background: var(--danger);
     }
+
     .connected .status-dot {
       background: var(--success);
       box-shadow: 0 0 8px var(--success);
     }
 
-    /* ── Device pills ── */
-    .devices {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .devices-label {
+    /* ── Device status ── */
+    .section-label {
       font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-dim);
-      margin-bottom: 2px;
+      margin-bottom: 8px;
+    }
+
+    .devices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .device-row {
@@ -122,21 +122,29 @@
     .device-note {
       font-size: 0.7rem;
       color: var(--text-dim);
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     /* ── D-Pad ── */
+    /*  Layout:
+           [LP↑] [RP↑]
+    [←]               [→]
+           [LP↓] [RP↓]
+    Grid: 4 cols × 3 rows                */
     .direction-controls {
       display: grid;
       grid-template-columns: repeat(4, 80px);
       grid-template-rows: repeat(3, 80px);
-      gap: 16px;
+      gap: 12px;
       margin: 0 auto;
       width: fit-content;
     }
+
+    .btn-left  { grid-column: 1; grid-row: 2; }
+    .btn-lp-up { grid-column: 2; grid-row: 1; }
+    .btn-rp-up { grid-column: 3; grid-row: 1; }
+    .btn-right { grid-column: 4; grid-row: 2; }
+    .btn-lp-dn { grid-column: 2; grid-row: 3; }
+    .btn-rp-dn { grid-column: 3; grid-row: 3; }
 
     button {
       width: 80px; height: 80px;
@@ -151,15 +159,15 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       box-shadow: var(--shadow);
     }
 
-    button .btn-label {
+    button .lbl {
       font-size: 0.55rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       color: var(--text-dim);
     }
 
@@ -168,29 +176,14 @@
       color: white;
       border-color: var(--accent-primary);
       transform: scale(0.92);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 15px rgba(59,130,246,0.3);
     }
 
-    button:active .btn-label, button.is-pressed .btn-label {
+    button:active .lbl, button.is-pressed .lbl {
       color: rgba(255,255,255,0.8);
     }
 
-    /* grid positions — 4 cols x 3 rows
-       Col: 1=left  2=up1/dn1  3=up2/dn2  4=right  */
-    .btn-left  { grid-column: 1; grid-row: 2; }
-    .btn-up1   { grid-column: 2; grid-row: 1; }
-    .btn-up2   { grid-column: 3; grid-row: 1; }
-    .btn-right { grid-column: 4; grid-row: 2; }
-    .btn-down1 { grid-column: 2; grid-row: 3; }
-    .btn-down2 { grid-column: 3; grid-row: 3; }
-
-    /* ── Logs ── */
-    .log-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
+    /* ── Log tabs ── */
     .log-tabs {
       display: flex;
       background: #f1f5f9;
@@ -213,14 +206,10 @@
       color: var(--text-dim);
       cursor: pointer;
       transition: all 0.15s;
-      width: auto;
-      height: auto;
+      /* reset button styles */
+      width: auto; height: auto;
       box-shadow: none;
-    }
-
-    .log-tab:active, .log-tab.is-pressed { /* prevent dpad styles applying */
-      transform: none;
-      box-shadow: none;
+      transform: none !important;
     }
 
     .log-tab.active {
@@ -237,7 +226,7 @@
       border: 1px solid #e2e8f0;
       border-radius: 16px;
       padding: 14px 16px;
-      height: 130px;
+      height: 140px;
       overflow-y: auto;
       font-family: ui-monospace, SFMono-Regular, monospace;
       font-size: 0.72rem;
@@ -247,14 +236,14 @@
     .log-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     .log-entry {
-      padding: 2px 0;
       display: flex;
       gap: 8px;
-      align-items: baseline;
-      border-bottom: 1px solid rgba(0,0,0,0.03);
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
     }
 
     .log-time { color: var(--text-dim); flex-shrink: 0; }
+
     .log-badge {
       font-size: 0.6rem;
       font-weight: 700;
@@ -262,13 +251,13 @@
       border-radius: 5px;
       flex-shrink: 0;
     }
+
     .badge-tx  { background: #fef3c7; color: #b45309; }
     .badge-rx  { background: #dcfce7; color: #15803d; }
     .badge-sys { background: #f1f5f9; color: var(--text-dim); }
-
-    .log-msg-tx  { color: #92400e; }
-    .log-msg-rx  { color: #166534; }
-    .log-msg-sys { color: var(--text-dim); }
+    .msg-tx    { color: #92400e; }
+    .msg-rx    { color: #166534; }
+    .msg-sys   { color: var(--text-dim); }
   </style>
 </head>
 <body>
@@ -282,71 +271,76 @@
   </div>
 
   <!-- Device Status -->
-  <div class="devices">
-    <div class="devices-label">Devices</div>
-    <div class="device-row" id="dev-controller1">
-      <div class="device-dot"></div>
-      <div class="device-name">Controller</div>
-      <div class="device-note" id="note-controller1">Offline</div>
-    </div>
-    <div class="device-row" id="dev-pcb1">
-      <div class="device-dot"></div>
-      <div class="device-name">PCB / Motors</div>
-      <div class="device-note" id="note-pcb1">Offline</div>
+  <div>
+    <div class="section-label">Devices</div>
+    <div class="devices">
+      <div class="device-row" id="dev-controller1">
+        <div class="device-dot"></div>
+        <div class="device-name">Controller (Joystick)</div>
+        <div class="device-note" id="note-controller1">Offline</div>
+      </div>
+      <div class="device-row" id="dev-pcb1">
+        <div class="device-dot"></div>
+        <div class="device-name">PCB / Relays</div>
+        <div class="device-note" id="note-pcb1">Offline</div>
+      </div>
     </div>
   </div>
 
-  <!-- Layout:
-         [UP1] [UP2]
-   [L]              [R]
-         [DN1] [DN2]
-  -->
-  <div class="direction-controls">
-    <button class="btn-left" id="btn-0"
-      onmousedown="press(0)" onmouseup="release(0)" onmouseleave="release(0)"
-      ontouchstart="press(0)" ontouchend="release(0)">
-      ← <span class="btn-label">Base L</span>
-    </button>
+  <!-- Controls -->
+  <div>
+    <div class="section-label">Manual Control</div>
+    <div class="direction-controls">
 
-    <button class="btn-up1" id="btn-2"
-      onmousedown="press(2)" onmouseup="release(2)" onmouseleave="release(2)"
-      ontouchstart="press(2)" ontouchend="release(2)">
-      ↑ <span class="btn-label">LP Up</span>
-    </button>
+      <button class="btn-left" id="btn-0"
+        onmousedown="press(0)" onmouseup="release(0)" onmouseleave="release(0)"
+        ontouchstart="press(0)" ontouchend="release(0)">
+        ← <span class="lbl">Base L</span>
+      </button>
 
-    <button class="btn-up2" id="btn-4"
-      onmousedown="press(4)" onmouseup="release(4)" onmouseleave="release(4)"
-      ontouchstart="press(4)" ontouchend="release(4)">
-      ↑ <span class="btn-label">RP Up</span>
-    </button>
+      <button class="btn-lp-up" id="btn-2"
+        onmousedown="press(2)" onmouseup="release(2)" onmouseleave="release(2)"
+        ontouchstart="press(2)" ontouchend="release(2)">
+        ↑ <span class="lbl">LP Up</span>
+      </button>
 
-    <button class="btn-right" id="btn-1"
-      onmousedown="press(1)" onmouseup="release(1)" onmouseleave="release(1)"
-      ontouchstart="press(1)" ontouchend="release(1)">
-      → <span class="btn-label">Base R</span>
-    </button>
+      <button class="btn-rp-up" id="btn-4"
+        onmousedown="press(4)" onmouseup="release(4)" onmouseleave="release(4)"
+        ontouchstart="press(4)" ontouchend="release(4)">
+        ↑ <span class="lbl">RP Up</span>
+      </button>
 
-    <button class="btn-down1" id="btn-3"
-      onmousedown="press(3)" onmouseup="release(3)" onmouseleave="release(3)"
-      ontouchstart="press(3)" ontouchend="release(3)">
-      ↓ <span class="btn-label">LP Dn</span>
-    </button>
+      <button class="btn-right" id="btn-1"
+        onmousedown="press(1)" onmouseup="release(1)" onmouseleave="release(1)"
+        ontouchstart="press(1)" ontouchend="release(1)">
+        → <span class="lbl">Base R</span>
+      </button>
 
-    <button class="btn-down2" id="btn-5"
-      onmousedown="press(5)" onmouseup="release(5)" onmouseleave="release(5)"
-      ontouchstart="press(5)" ontouchend="release(5)">
-      ↓ <span class="btn-label">RP Dn</span>
-    </button>
+      <button class="btn-lp-dn" id="btn-3"
+        onmousedown="press(3)" onmouseup="release(3)" onmouseleave="release(3)"
+        ontouchstart="press(3)" ontouchend="release(3)">
+        ↓ <span class="lbl">LP Dn</span>
+      </button>
+
+      <button class="btn-rp-dn" id="btn-5"
+        onmousedown="press(5)" onmouseup="release(5)" onmouseleave="release(5)"
+        ontouchstart="press(5)" ontouchend="release(5)">
+        ↓ <span class="lbl">RP Dn</span>
+      </button>
+
+    </div>
   </div>
 
   <!-- Logs -->
-  <div class="log-wrap">
+  <div>
+    <div class="section-label">Live Log</div>
     <div class="log-tabs">
       <button class="log-tab active" onclick="switchTab('all')">All</button>
       <button class="log-tab" onclick="switchTab('tx')">TX</button>
       <button class="log-tab" onclick="switchTab('rx')">RX</button>
       <button class="log-tab" onclick="switchTab('sys')">System</button>
     </div>
+    <br>
     <div class="log-panel active" id="panel-all"><div class="log-area" id="log-all"></div></div>
     <div class="log-panel" id="panel-tx"><div class="log-area" id="log-tx"></div></div>
     <div class="log-panel" id="panel-rx"><div class="log-area" id="log-rx"></div></div>
@@ -356,7 +350,8 @@
 </div>
 
 <script>
-  const DIR = { 0:'Base ←', 1:'Base →', 2:'LP ↑', 3:'LP ↓', 4:'RP ↑', 5:'RP ↓' };
+  const DIR = { 0:'Base←', 1:'Base→', 2:'LP↑', 3:'LP↓', 4:'RP↑', 5:'RP↓' };
+  const WS_URL = 'wss://holy-backend-64n1.onrender.com';
 
   let ws;
   const pressedState = {};
@@ -364,38 +359,38 @@
   // ── Tabs ──────────────────────────────────────────────────────
   function switchTab(tab) {
     document.querySelectorAll('.log-tab').forEach(t =>
-      t.classList.toggle('active', t.textContent.toLowerCase().startsWith(tab === 'all' ? 'all' : tab))
+      t.classList.toggle('active', t.textContent.toLowerCase() === tab || (tab === 'all' && t.textContent.toLowerCase() === 'all'))
     );
     document.querySelectorAll('.log-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(`panel-${tab}`).classList.add('active');
   }
 
-  // ── Logging ───────────────────────────────────────────────────
+  // ── Log ───────────────────────────────────────────────────────
   function addLog(type, message) {
     const time = new Date().toLocaleTimeString([], { hour12: false });
-    const labels = { tx: 'TX', rx: 'RX', sys: 'SYS' };
+    const label = { tx:'TX', rx:'RX', sys:'SYS' }[type];
 
     function row() {
       const d = document.createElement('div');
       d.className = 'log-entry';
       d.innerHTML = `<span class="log-time">${time}</span>
-                     <span class="log-badge badge-${type}">${labels[type]}</span>
-                     <span class="log-msg-${type}">${message}</span>`;
+                     <span class="log-badge badge-${type}">${label}</span>
+                     <span class="msg-${type}">${message}</span>`;
       return d;
     }
 
     const all = document.getElementById('log-all');
     all.prepend(row());
-    if (all.children.length > 40) all.removeChild(all.lastChild);
+    if (all.children.length > 50) all.removeChild(all.lastChild);
 
     const specific = document.getElementById(`log-${type}`);
     specific.prepend(row());
-    if (specific.children.length > 40) specific.removeChild(specific.lastChild);
+    if (specific.children.length > 50) specific.removeChild(specific.lastChild);
   }
 
-  // ── Device status ─────────────────────────────────────────────
+  // ── Device ────────────────────────────────────────────────────
   function setDevice(id, online, note) {
-    const row  = document.getElementById(`dev-${id}`);
+    const row = document.getElementById(`dev-${id}`);
     const noteEl = document.getElementById(`note-${id}`);
     if (!row) return;
     row.classList.toggle('online', online);
@@ -404,13 +399,13 @@
 
   // ── WebSocket ─────────────────────────────────────────────────
   function connect() {
-    ws = new WebSocket('wss://holy-backend-64n1.onrender.com');
+    ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
       document.getElementById('connection-status').className = 'connected';
       document.getElementById('status-text').textContent = 'Live Connection';
-      ws.send(JSON.stringify({ type: 'register', clientType: 'webpage', deviceId: 'webpage' }));
-      addLog('sys', 'WebSocket connected');
+      ws.send(JSON.stringify({ type:'register', clientType:'webpage', deviceId:'webpage' }));
+      addLog('sys', 'Connected to server');
     };
 
     ws.onmessage = (e) => {
@@ -421,25 +416,28 @@
         setDevice(data.deviceId, true);
         addLog('sys', `${data.deviceId} connected`);
       }
+
       if (data.type === 'device_disconnected') {
         setDevice(data.deviceId, false);
         addLog('sys', `${data.deviceId} disconnected`);
       }
+
       if (data.type === 'command' && 'd' in data) {
-        const dir = DIR[data.d] || `d=${data.d}`;
-        const act = data.s === 1 ? '▶' : '■';
-        const from = data.from || data.deviceId || '';
-        const to   = data.t || data.target || '';
+        const dir  = DIR[data.d] || `d=${data.d}`;
+        const act  = data.s === 1 ? '▶' : '■';
+        const from = data.from || '?';
+        const to   = data.t   || '?';
+
         if (from === 'controller1') {
           addLog('tx', `${act} ${dir} → ${to}`);
           setDevice('controller1', true, `${act} ${dir}`);
+        } else if (from === 'webpage') {
+          addLog('tx', `WEB ${act} ${dir} → ${to}`);
         } else if (from === 'pcb1') {
           addLog('rx', `ACK ${act} ${dir}`);
-          setDevice('pcb1', true, `Last: ${dir}`);
-        } else {
-          addLog('tx', `WEB ${act} ${dir}`);
         }
       }
+
       if (data.type === 'status') {
         setDevice(data.deviceId, true, data.message || 'Active');
         addLog('sys', `Status · ${data.deviceId}`);
@@ -451,16 +449,17 @@
       document.getElementById('status-text').textContent = 'Offline';
       setDevice('controller1', false);
       setDevice('pcb1', false);
-      addLog('sys', 'Lost connection — retrying...');
+      addLog('sys', 'Lost connection — retrying in 3s');
       setTimeout(connect, 3000);
     };
+
+    ws.onerror = () => addLog('sys', 'WebSocket error');
   }
 
   // ── Send ──────────────────────────────────────────────────────
   function sendCmd(d, s) {
     if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'command', t: 'pcb1', d, s }));
-      addLog('tx', `${s ? '▶' : '■'} ${DIR[d]}`);
+      ws.send(JSON.stringify({ type:'command', t:'pcb1', d, s }));
     }
   }
 
@@ -479,13 +478,14 @@
   }
 
   // ── Keyboard ──────────────────────────────────────────────────
+  // A/D or ←/→ = Base   W/S = LP up/down   I/K = RP up/down
   const keyMap = {
-    'ArrowLeft':'0','a':'0','A':'0',   // Base left
-    'ArrowRight':'1','d':'1','D':'1',  // Base right
-    'w':'2','W':'2',                   // LP up
-    's':'3','S':'3',                   // LP down
-    'ArrowUp':'4',                     // RP up
-    'ArrowDown':'5',                   // RP down
+    'ArrowLeft':'0','a':'0','A':'0',
+    'ArrowRight':'1','d':'1','D':'1',
+    'w':'2','W':'2',
+    's':'3','S':'3',
+    'i':'4','I':'4',
+    'k':'5','K':'5',
   };
 
   document.addEventListener('keydown', e => {
